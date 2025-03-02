@@ -16,6 +16,8 @@ function addTodo() {
   const todoObject = generateTodoObject(generateID, textTodo, timestamp, false);
   todos.push(todoObject);
 
+  document.getElementById("title").value = "";
+  document.getElementById("date").value = "";
   document.dispatchEvent(new Event(RENDER_EVENT));
 }
 
@@ -53,7 +55,7 @@ function makeTodo(todoObject) {
   const container = document.createElement("div");
   container.classList.add("item", "shadow");
   container.append(textContainer);
-  container.setAttribute(`id`, `todo-${todoObject.id}`);
+  container.setAttribute("id", `todo-${todoObject.id}`);
 
   if (todoObject.isCompleted) {
     const undoButton = document.createElement("button");
@@ -89,15 +91,20 @@ document.addEventListener(RENDER_EVENT, function () {
   const uncompletedTODOlist = document.getElementById("todos");
   uncompletedTODOlist.innerHTML = "";
 
+  const completedTODOlist = document.getElementById("completed-todos");
+  completedTODOlist.innerHTML = "";
+
   for (const todoItem of todos) {
     const todoElement = makeTodo(todoItem);
     if (!todoItem.isCompleted) {
       uncompletedTODOlist.append(todoElement);
+    } else {
+      completedTODOlist.append(todoElement);
     }
   }
 });
 
-function addTaskToCompleted() {
+function addTaskToCompleted(todoId) {
   const todoTarget = findTodo(todoId);
 
   if (todoTarget == null) return;
@@ -112,4 +119,32 @@ function findTodo(todoId) {
       return todoItem;
     }
   }
+  return null;
+}
+
+function removeTaskFromCompleted(todoId) {
+  const todoTarget = findTodoIndex(todoId);
+
+  if (todoTarget === -1) return;
+
+  todos.splice(todoTarget, 1);
+  document.dispatchEvent(new Event(RENDER_EVENT));
+}
+
+function undoTaskFromCompleted(todoId) {
+  const todoTarget = findTodo(todoId);
+
+  if (todoTarget === null) return;
+
+  todoTarget.isCompleted = false;
+  document.dispatchEvent(new Event(RENDER_EVENT));
+}
+
+function findTodoIndex(todoId) {
+  for (const index in todos) {
+    if (todos[index].id === todoId) {
+      return index;
+    }
+  }
+  return -1;
 }
